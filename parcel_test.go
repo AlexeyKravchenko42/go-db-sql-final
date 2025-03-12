@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -78,7 +79,7 @@ func TestSetAddress(t *testing.T) {
 	// добавьте новую посылку в БД, убедитесь в отсутствии ошибки и наличии идентификатора
 	number, err := store.Add(parcel)
 
-	require.NoError(t, err) //ВЫДАЕТ ОШИБКУ
+	require.NoError(t, err)
 	require.NotEmpty(t, number)
 	// set address
 	// обновите адрес, убедитесь в отсутствии ошибки
@@ -89,8 +90,8 @@ func TestSetAddress(t *testing.T) {
 	// check
 	// получите добавленную посылку и убедитесь, что адрес обновился
 	stored, err := store.Get(number)
-	require.NoError(t, err)
-	require.Equal(t, newAddress, stored.Address)
+	assert.NoError(t, err)
+	assert.Equal(t, newAddress, stored.Address)
 }
 
 // TestSetStatus проверяет обновление статуса
@@ -105,7 +106,7 @@ func TestSetStatus(t *testing.T) {
 	// add
 	// добавьте новую посылку в БД, убедитесь в отсутствии ошибки и наличии идентификатора
 	parcel.Number, err = store.Add(parcel)
-	require.NoError(t, err) //ВЫДАЕТ ОШИБКУ
+	require.NoError(t, err)
 	require.NotEmpty(t, parcel.Number)
 
 	// set status
@@ -116,8 +117,8 @@ func TestSetStatus(t *testing.T) {
 	// check
 	// получите добавленную посылку и убедитесь, что статус обновился
 	stored, err := store.Get(parcel.Number)
-	require.NoError(t, err)
-	require.Equal(t, ParcelStatusDelivered, stored.Status)
+	assert.NoError(t, err)
+	assert.Equal(t, ParcelStatusDelivered, stored.Status)
 }
 
 // TestGetByClient проверяет получение посылок по идентификатору клиента
@@ -144,11 +145,12 @@ func TestGetByClient(t *testing.T) {
 	// add
 	for i := 0; i < len(parcels); i++ {
 		id, _ := store.Add(parcels[i])
-		require.NoError(t, err) //ВЫДАЕТ ОШИБКУ
+		require.NoError(t, err)
 		require.NotEmpty(t, id) // добавьте новую посылку в БД, убедитесь в отсутствии ошибки и наличии идентификатора
 
 		// обновляем идентификатор добавленной у посылки
 		parcels[i].Number = id
+		//parcels[i].Client = client
 
 		// сохраняем добавленную посылку в структуру map, чтобы её можно было легко достать по идентификатору посылки
 		parcelMap[id] = parcels[i]
@@ -158,14 +160,15 @@ func TestGetByClient(t *testing.T) {
 	// убедитесь в отсутствии ошибки
 	require.NoError(t, err)
 	// убедитесь, что количество полученных посылок совпадает с количеством добавленных
-	require.Equal(t, len(parcels), len(storedParcels))
+	assert.Len(t, parcels, len(storedParcels))
+
 	// check
 	for _, parcel := range storedParcels {
 		// в parcelMap лежат добавленные посылки, ключ - идентификатор посылки, значение - сама посылка
 
 		// убедитесь, что все посылки из storedParcels есть в parcelMap
-		require.NotEmpty(t, parcelMap[parcel.Number])
+		assert.NotEmpty(t, parcelMap[parcel.Number])
 		// убедитесь, что значения полей полученных посылок заполнены верно
-		require.Equal(t, parcelMap[parcel.Number], parcel)
+		assert.Equal(t, parcelMap[parcel.Number], parcel)
 	}
 }
