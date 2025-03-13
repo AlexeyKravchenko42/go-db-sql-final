@@ -41,7 +41,6 @@ func TestAddGetDelete(t *testing.T) {
 	// add
 	// добавьте новую посылку в БД, убедитесь в отсутствии ошибки и наличии идентификатора
 	number, err := store.Add(parcel)
-
 	require.NoError(t, err)
 	require.NotEmpty(t, number)
 
@@ -51,11 +50,9 @@ func TestAddGetDelete(t *testing.T) {
 	stored, err := store.Get(number)
 	require.NoError(t, err)
 
-	//assert.Equal(t, parcel, stored)
-	require.Equal(t, parcel.Client, stored.Client)
-	require.Equal(t, parcel.Address, stored.Address)
-	require.Equal(t, parcel.Status, stored.Status)
-	require.Equal(t, parcel.CreatedAt, stored.CreatedAt)
+	parcel.Number = number
+	assert.Equal(t, parcel, stored)
+
 	// delete
 	// удалите добавленную посылку, убедитесь в отсутствии ошибки
 	// проверьте, что посылку больше нельзя получить из БД

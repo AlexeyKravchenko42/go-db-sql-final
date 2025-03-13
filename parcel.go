@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 )
 
 type ParcelStore struct {
@@ -37,6 +38,7 @@ func (s ParcelStore) Get(number int) (Parcel, error) {
 	// реализуйте чтение строки по заданному number
 	// здесь из таблицы должна вернуться только одна строка
 	p := Parcel{}
+	p.Number = number
 	row := s.db.QueryRow("SELECT client, status, address, created_at FROM parcel WHERE number = :number", sql.Named("number", number))
 
 	// заполните объект Parcel данными из таблицы
@@ -90,22 +92,13 @@ func (s ParcelStore) SetStatus(number int, status string) error {
 func (s ParcelStore) SetAddress(number int, address string) error {
 	// реализуйте обновление адреса в таблице parcel
 	// менять адрес можно только если значение статуса registered
-	row := s.db.QueryRow("SELECT status FROM parcel WHERE number = :number",
+	_, err := s.db.Exec("UPDATE parcel SET address = :address WHERE number = :number AND status = :status",
+		sql.Named("address", address),
 		sql.Named("number", number),
+		sql.Named("status", ParcelStatusRegistered),
 	)
-	var status string
-	err := row.Scan(&status)
 	if err != nil {
 		return err
-	}
-	if status == ParcelStatusRegistered {
-		_, err := s.db.Exec("UPDATE parcel SET address = :address WHERE number = :number",
-			sql.Named("address", address),
-			sql.Named("number", number),
-		)
-		if err != nil {
-			return err
-		}
 	}
 	return nil
 }
@@ -113,21 +106,14 @@ func (s ParcelStore) SetAddress(number int, address string) error {
 func (s ParcelStore) Delete(number int) error {
 	// реализуйте удаление строки из таблицы parcel
 	// удалять строку можно только если значение статуса registered
-	row := s.db.QueryRow("SELECT status FROM parcel WHERE number = :number",
+	fmt.Println(number)
+	_, err := s.db.Exec("DELETE FROM parcel WHERE number = :number AND status = :status",
 		sql.Named("number", number),
+		sql.Named("status", ParcelStatusRegistered),
 	)
-	var status string
-	err := row.Scan(&status)
+	fmt.Println(err)
 	if err != nil {
 		return err
-	}
-	if status == ParcelStatusRegistered {
-		_, err := s.db.Exec("DELETE FROM parcel WHERE number = :number",
-			sql.Named("number", number),
-		)
-		if err != nil {
-			return err
-		}
 	}
 	return nil
 }
